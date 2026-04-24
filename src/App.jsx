@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { aboutCard, categories, projects } from "./data/projects";
 
 const defaultProject = projects[2];
+const restMouse = { x: -9999, y: -9999 };
 const profileNode = {
   id: "about",
   size: 176,
@@ -22,7 +23,7 @@ function toPixelTarget(item, width, height) {
 }
 
 function resolveCollisions(bubbles, width, height) {
-  for (let iteration = 0; iteration < 10; iteration += 1) {
+  for (let iteration = 0; iteration < 4; iteration += 1) {
     for (let i = 0; i < bubbles.length; i += 1) {
       for (let j = i + 1; j < bubbles.length; j += 1) {
         const a = bubbles[i];
@@ -36,7 +37,7 @@ function resolveCollisions(bubbles, width, height) {
           const nx = dx / distance;
           const ny = dy / distance;
           const overlap = minDistance - distance;
-          const push = overlap * 0.5;
+          const push = overlap * 0.3;
 
           a.x -= nx * push;
           a.y -= ny * push;
@@ -278,10 +279,11 @@ export default function App() {
 
   const fieldRef = useRef(null);
   const animationRef = useRef(0);
-  const mouseRef = useRef({ x: -9999, y: -9999 });
+  const mouseRef = useRef(restMouse);
   const bubblePhysicsRef = useRef([]);
   const hoveredIdRef = useRef(null);
   const selectedIdRef = useRef(defaultProject.id);
+  const interactingRef = useRef(false);
 
   const visibleProjects = useMemo(
     () =>
@@ -372,18 +374,19 @@ export default function App() {
         const mouseDy = mouseRef.current.y - bubble.y;
         const mouseDistance = Math.hypot(mouseDx, mouseDy);
         const hoverLocked = hoveredIdRef.current === item.id;
+        const isInteracting = interactingRef.current;
 
-        if (mouseDistance < 260 && mouseDistance > 0.001) {
-          const cursorInfluence = (1 - mouseDistance / 260) ** 2;
+        if (isInteracting && mouseDistance < 180 && mouseDistance > 0.001) {
+          const cursorInfluence = (1 - mouseDistance / 180) ** 2;
           const pullStrength =
             item.id === "about"
-              ? 0.0012
+              ? 0.00015
               : hoverLocked
-                ? 0.001
-                : 0.0026;
+                ? 0.00012
+                : 0.00035;
 
-          bubble.vx += (mouseDx / mouseDistance) * cursorInfluence * pullStrength * 60;
-          bubble.vy += (mouseDy / mouseDistance) * cursorInfluence * pullStrength * 60;
+          bubble.vx += (mouseDx / mouseDistance) * cursorInfluence * pullStrength * 10;
+          bubble.vy += (mouseDy / mouseDistance) * cursorInfluence * pullStrength * 10;
         }
 
         if (item.id !== "about") {
@@ -396,14 +399,22 @@ export default function App() {
             2;
           const clingOffset = centerDistance - desiredDistance;
 
-          bubble.vx += (centerDx / centerDistance) * clingOffset * 0.02;
-          bubble.vy += (centerDy / centerDistance) * clingOffset * 0.02;
+          bubble.vx += (centerDx / centerDistance) * clingOffset * 0.009;
+          bubble.vy += (centerDy / centerDistance) * clingOffset * 0.009;
         }
 
-        bubble.vx += (bubble.targetX - bubble.x) * 0.018;
-        bubble.vy += (bubble.targetY - bubble.y) * 0.018;
-        bubble.vx *= 0.88;
-        bubble.vy *= 0.88;
+        bubble.vx += (bubble.targetX - bubble.x) * 0.004;
+        bubble.vy += (bubble.targetY - bubble.y) * 0.004;
+        bubble.vx *= 0.92;
+        bubble.vy *= 0.92;
+
+        if (!isInteracting && Math.abs(bubble.vx) < 0.05) {
+          bubble.vx = 0;
+        }
+        if (!isInteracting && Math.abs(bubble.vy) < 0.05) {
+          bubble.vy = 0;
+        }
+
         bubble.x += bubble.vx;
         bubble.y += bubble.vy;
 
@@ -475,6 +486,7 @@ export default function App() {
 
   function handlePointerMove(event) {
     const rect = event.currentTarget.getBoundingClientRect();
+    interactingRef.current = true;
     mouseRef.current = {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top,
@@ -482,7 +494,8 @@ export default function App() {
   }
 
   function handlePointerLeave() {
-    mouseRef.current = { x: -9999, y: -9999 };
+    interactingRef.current = false;
+    mouseRef.current = restMouse;
     setHoveredId(null);
   }
 
