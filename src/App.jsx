@@ -100,9 +100,17 @@ function Bubble({
       <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_28%,rgba(255,255,255,0.42),transparent_28%),radial-gradient(circle_at_75%_74%,rgba(255,255,255,0.08),transparent_36%)]" />
 
       <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full">
-        <span className="px-2 text-center text-sm font-bold tracking-[-0.03em] text-white drop-shadow-md">
-          {item.shortTitle}
-        </span>
+        {item.logo ? (
+          <img
+            src={`${import.meta.env.BASE_URL}${item.logo}`}
+            alt={item.title}
+            className="h-[58%] w-[58%] rounded-full object-cover shadow-[0_8px_18px_rgba(15,23,42,0.22)]"
+          />
+        ) : (
+          <span className="px-2 text-center text-sm font-bold tracking-[-0.03em] text-white drop-shadow-md">
+            {item.shortTitle}
+          </span>
+        )}
         <span className="pointer-events-none absolute -bottom-10 left-1/2 w-max -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-white/90 opacity-0 shadow-lg backdrop-blur-md transition duration-300 group-hover:-bottom-4 group-hover:opacity-100 group-focus-visible:-bottom-4 group-focus-visible:opacity-100">
           {item.title}
         </span>
