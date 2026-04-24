@@ -137,7 +137,7 @@ function ProfileBubble({ bubble, onSelect, active, hovered, onHover, onLeave }) 
     >
       <span className="absolute inset-3 rounded-full border border-white/35" />
       <img
-        src="/headshot_chris.jpg"
+        src={`${import.meta.env.BASE_URL}headshot_chris.jpg`}
         alt="Portrait of Megan Sacyat"
         className="h-full w-full object-cover"
       />
